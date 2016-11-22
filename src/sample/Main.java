@@ -13,6 +13,8 @@ public class Main extends Application {
         Parent root = FXMLLoader.load(getClass().getResource("sample.fxml")); //Файл с разметкой формы
         primaryStage.setTitle("Minesweeper"); //Установка тайтла, тоесть названия окна
         primaryStage.setScene(new Scene(root, 355, 405)); //Настройка размеров окна
+        primaryStage.getScene().getStylesheets().add("res/fgsfds.css");
+        primaryStage.getScene().getStylesheets().add("custom.css");
         Image icon = new Image(getClass().getClassLoader().getResourceAsStream("res/Mine.png"));//Иконка загружается в память, теперь уже через объявленную папку с ресурсами
         primaryStage.getIcons().add(icon); //И устанавливается как иконка окна
         primaryStage.setResizable(false); //Размер окошка теперь не изменяется пользователем

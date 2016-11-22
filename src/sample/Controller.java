@@ -1,5 +1,7 @@
 package sample;
 
+import javafx.animation.KeyFrame;
+import javafx.animation.Timeline;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.Button;
@@ -9,8 +11,10 @@ import javafx.scene.image.Image;
 import javafx.scene.image.ImageView;
 import javafx.scene.input.MouseButton;
 import javafx.scene.input.MouseEvent;
+import javafx.scene.layout.Border;
 import javafx.scene.layout.GridPane;
 import javafx.scene.text.Font;
+import javafx.util.Duration;
 
 import java.util.Random;
 
@@ -20,6 +24,24 @@ import java.util.Random;
 public class Controller { //Это класс-контроллер
     Image mineIcon = new Image(getClass().getResourceAsStream("32icon.png"));//Это иконка мины
     Image flagIcon = new Image(getClass().getResourceAsStream("flagBig.png"));//А эта - флага
+    @FXML Label timerLabel=new Label();
+    @FXML public void initialize(){ //При запуске формы вызывается этот метод
+        timerLabel.setText("0");
+        dotsLeft=80;
+        minesFlagged=20;
+        field = CreateNewField(10,10,20); //Создается новый массив с кноками
+        mineIcon=new Image(getClass().getResourceAsStream("32icon.png"));
+        flagIcon=new Image(getClass().getResourceAsStream("flagBig.png"));//Загружаются большие иконки для флагов и мин
+        for (int s=0;s<9;s++){
+            currentNumberSet[s]= new Image(getClass().getClassLoader().getResourceAsStream("res/NumbersBig/"+Integer.toString(s+1)+".png")); //Большие иконки вместо цифр
+        }
+        mineCountLabel.setText(Integer.toString(minesFlagged)); //Обновляется надпись, которая играет роль счетчика помеченных флажками мин для игрока
+        IsFirstButtonPressed = false; //Обновляется фактор первого нажатия на кнопку, чтобы не попасть на мину на первом же ходе
+        setMineFieldPane(mineFieldPane, field); //Обновляется поле
+        startButton.setText("Заново"); //Изменяется текст кнопкидля старта
+    }
+
+
     @FXML Label mineCountLabel=new Label(); //Надпись, которая показывает сколько мин осталось пометить
     Image[] currentNumberSet = new Image[9]; //Это массив с иконками цифр
     static boolean IsFirstButtonPressed = false; //Первая кнопка должна быть без мины
@@ -104,12 +126,21 @@ public class Controller { //Это класс-контроллер
                 currentNumberSet[s]= new Image(getClass().getClassLoader().getResourceAsStream("res/NumbersBig/"+Integer.toString(s+1)+".png")); //Большие иконки вместо цифр
             }
         }
+
         mineCountLabel.setText(Integer.toString(minesFlagged)); //Обновляется надпись, которая играет роль счетчика помеченных флажками мин для игрока
         IsFirstButtonPressed = false; //Обновляется фактор первого нажатия на кнопку, чтобы не попасть на мину на первом же ходе
         setMineFieldPane(mineFieldPane, field); //Обновляется поле
         startButton.setText("Заново"); //Изменяется текст кнопкидля старта
         startButton.setLayoutX((startButton.getScene().getWindow().getWidth()/2)-(startButton.getPrefWidth()/2)); //Изменяется положение кнопки для старта. Она должна быть ровно посередине
     }
+
+//    private void increaseTimer(Label label){
+//        if (Integer.getInteger(label.getText())<999){
+//            String x = label.getText();
+//            x++;
+//            label.setText(Integer.parseInt());
+//        }
+//    }
 
     private void CheckOtherButtons(mineButton thisButton){//Метод, который проверяет, есть ли мины в соседних кнопках.
         {
@@ -151,11 +182,13 @@ public class Controller { //Это класс-контроллер
                 if (!thisButton.isMineHere) { //Если мины нет
                     thisButton.isChecked = true; //Кнопка помечается как проверенная
                     thisButton.setDisable(true); //Кнопка деактивируется
+                    thisButton.setOpacity(0.50);;
                     dotsLeft--; //Уменьшается кол-во мин, которые нужно пометить
                     if (thisButton.minesNearby > 0) { //Если рядом с кнопкой есть мины
                         thisButton.setGraphic(new ImageView(currentNumberSet[thisButton.minesNearby-1])); //То показывается прямо на кнопке сколько, иконкой цифры
                     } else { //А если нет
                         CheckOtherButtons(thisButton); //Этим методом проверяются остальные кнопки
+                        thisButton.setOpacity(0.10);
                     }
                     if (dotsLeft <= 0) startButton.setText("Ты победил");//Если игрок нажал на все кнопки, на которых нет мин, стартовая кнопка сообщает ему, что он победил
                     //Интересно, что даже после победы игрок всегда может убрать флажок и нажать на мину, в таком случае он проиграет
@@ -214,6 +247,7 @@ public class Controller { //Это класс-контроллер
                     dot.setGraphic(new ImageView(mineIcon)); //То эта мина показывается, картинкой.
                 }
                 dot.setDisable(true); //Вырубает каждую кнопку
+                dot.setOpacity(1.00);
             }
         }
         startButton.setText("Ты проиграл"); //Главная кнопка показывает, что игрок проиграл
@@ -245,8 +279,10 @@ class mineButton extends Button { //Объявляется новый класс
         this.setStyle("-fx-background-color: -fx-outer-border, -fx-inner-border, -fx-body-color;\n" +
                 "    -fx-background-insets: 0, 1, 2;\n" +
                 "    -fx-background-radius: 5, 4, 3;" +
-                " -fx-text-fill: white; -fx-font-weight: bold;" ); //Нужно чтобы при фокусе кнопка не светилась
+                " -fx-text-fill: white; -fx-font-weight: bold;"
+        ); //Нужно чтобы при фокусе кнопка не светилась
     }
+
     boolean isMineHere = false; //Наличие мины на кнопке. По умолчанию её нет.
     boolean isFlagged = false; //Поставлен ли на мине флажок.
     boolean isChecked = false; //Костыль. Проверяет была ли нажата кнопка, чтобы автоматика не проверяла её несколько раз
